@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkyBiz Printer Service</title>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="node_modules/@fortawesome/fontawesome-free/css/all.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <div class="container mt-2 mb-2">
+    <!-- CONFIGURATION -->
+    <div class="row justify-content-center mb-4">
+      <div class="col-md-6">
+        <div class="card shadow-lg border-0 rounded-4 mb-4">
+          <div class="card-body p-5 text-center">
+            <h4 class="card-title text-center fw-bold text-primary">
+              SkyBiz Printer Service
+            </h4>
+            <span class="text-muted">
+              Version <span id="appVersion"></span>
+            </span>
+          </div>
+        </div>
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-body p-4">
+            <h5 class="card-title text-left mb-4 fw-bold">Configuration</h5>
+
+            <form id="configForm">
+              <div class="mb-3">
+                <label for="deviceId" class="form-label fw-semibold">Device ID</label>
+                <span class="text-danger" title="MAC Address" id="btnMACAddress"><i class="fa fa-desktop" aria-hidden="true"></i></span>
+                <input type="text" class="form-control" id="deviceId" placeholder="Enter device ID" required />
+              </div>
+
+              <div class="mb-3">
+                <label for="wsServer" class="form-label fw-semibold">WebSocket Server</label>
+                <input type="text" class="form-control" id="wsServer" placeholder="wss://example.com:1234" />
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="button" id="btnSaveConfig" class="btn btn-primary rounded-pill shadow-sm">
+                  <i class="fa fa-cog"></i> Save Configuration
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-body p-4">
+            <h5 class="card-title text-left mb-3 fw-bold">Printer Testing</h5>
+
+            <form id="testPrintForm">
+              <div class="mb-2">
+                <label for="printerName" class="form-label fw-semibold">Printer IP</label>
+                <input type="text" class="form-control" id="printerName" placeholder="e.g. 192.168.1.110" value="192.168.1.110" />
+              </div>
+              <div class="mb-2">
+                <label for="printerPort" class="form-label fw-semibold">Printer Port</label>
+                <input type="text" class="form-control" id="printerPort" placeholder="9100" value="9100" />
+              </div>
+              <div class="mb-2">
+                <label for="printMode" class="form-label fw-semibold">Print Mode</label>
+                <select class="form-select" id="printMode" required>
+                  <option value="network">Network</option>
+                  <option value="usb">USB</option>
+                  <!-- <option value="serial">Serial</option> -->
+                  <!-- <option value="bluetooth">Bluetooth</option> -->
+                  <option value="file">File</option>
+                </select>
+              </div>
+              <div class="mb-2">
+                <label for="printText" class="form-label fw-semibold">Text To Print</label>
+                <textarea class="form-control" rows="3" id="printText">----TEST----</textarea>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="button" id="btnTestPrint" class="btn btn-success rounded-pill shadow-sm">
+                  <i class="fa fa-print"></i> Test Print
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUEUE LISTING -->
+    <div class="row justify-content-center mb-4">
+      <div class="col-md-12">
+        <div class="card shadow-lg border-0 rounded-4">
+          <div class="card-body p-4">
+            
+            <!-- Header bar -->
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+              <h5 class="card-title fw-bold mb-0">Print Queue</h5>
+              <button id="btnDeleteFailed" class="btn btn-danger rounded-pill shadow-sm">
+                <i class="fa fa-trash"></i> Delete All Failed
+              </button>
+            </div>
+
+            <!-- Grid.js table will be rendered here -->
+            <div id="queueTable"></div>
+
+            <!-- Modal for Print Text Detail -->
+            <div class="modal fade" id="textModal" tabindex="-1" aria-labelledby="textModalLabel" aria-hidden="true">
+              <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content rounded-4">
+                  <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="textModalLabel">Print Text Detail</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <span class="badge text-bg-primary mb-2" id="modalTitle">Info</span>
+                    <div id="modalContent" class="text-center"></div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div id="log" class="console-log"></div>
+    <div class="row mt-3">
+      <div class="col-sm-12">
+        <button class="btn btn-danger rounded-pill shadow-sm" id="btnClearLog">
+          <i class="fa fa-times"></i> Clear Log
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap -->
+  <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Grid.js -->
+  <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+  <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+
+  <!-- SweetAlert -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Renderer -->
+  <script src="./src/renderer.js"></script>
+</body>
+</html>

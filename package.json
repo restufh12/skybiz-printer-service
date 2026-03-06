@@ -1,0 +1,78 @@
+{
+  "name": "skybiz-printer-service",
+  "version": "1.0.1",
+  "description": "SkyBiz application for printer configuration",
+  "main": "main.js",
+  "author": "SkyBiz",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "build": {
+    "appId": "com.skybiz.printerservice",
+    "productName": "SkyBizPrinterService",
+    "compression": "maximum",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/escpos/**",
+      "node_modules/escpos-network/**",
+      "node_modules/escpos-usb/**"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/escpos/",
+        "to": "app/node_modules/escpos/"
+      },
+      {
+        "from": "node_modules/escpos-network/",
+        "to": "app/node_modules/escpos-network/"
+      },
+      {
+        "from": "node_modules/escpos-usb/",
+        "to": "app/node_modules/escpos-usb/"
+      }
+    ],
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://cloudtest.skybiz.my/01/printer-service/"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^32.3.3",
+    "electron-builder": "^25.1.0",
+    "electron-rebuild": "^3.2.9"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
+    "better-sqlite3": "^12.4.1",
+    "bootstrap": "^5.3.8",
+    "electron-auto-launch": "^5.0.5",
+    "electron-updater": "^6.6.2",
+    "escpos": "^3.0.0-alpha.6",
+    "escpos-network": "^3.0.0-alpha.5",
+    "escpos-usb": "^3.0.0-alpha.4",
+    "font-awesome": "^4.7.0",
+    "macaddress": "^0.5.3",
+    "ws": "^8.18.3"
+  }
+}
