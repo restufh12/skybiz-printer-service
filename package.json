@@ -1,6 +1,6 @@
 {
   "name": "skybiz-printer-service",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "SkyBiz application for printer configuration",
   "main": "main.js",
   "author": "SkyBiz",
@@ -22,7 +22,8 @@
     "asarUnpack": [
       "node_modules/escpos/**",
       "node_modules/escpos-network/**",
-      "node_modules/escpos-usb/**"
+      "node_modules/escpos-usb/**",
+      "node_modules/usb/**"
     ],
     "extraResources": [
       {
@@ -74,6 +75,7 @@
     "escpos-usb": "^3.0.0-alpha.4",
     "font-awesome": "^4.7.0",
     "macaddress": "^0.5.3",
+    "usb": "^1.9.2",
     "ws": "^8.18.3"
   }
 }

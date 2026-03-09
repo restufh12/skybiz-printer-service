@@ -61,22 +61,30 @@
 
             <form id="testPrintForm">
               <div class="mb-2">
-                <label for="printerName" class="form-label fw-semibold">Printer IP</label>
-                <input type="text" class="form-control" id="printerName" placeholder="e.g. 192.168.1.110" value="192.168.1.110" />
-              </div>
-              <div class="mb-2">
-                <label for="printerPort" class="form-label fw-semibold">Printer Port</label>
-                <input type="text" class="form-control" id="printerPort" placeholder="9100" value="9100" />
-              </div>
-              <div class="mb-2">
                 <label for="printMode" class="form-label fw-semibold">Print Mode</label>
                 <select class="form-select" id="printMode" required>
                   <option value="network">Network</option>
                   <option value="usb">USB</option>
                   <!-- <option value="serial">Serial</option> -->
                   <!-- <option value="bluetooth">Bluetooth</option> -->
-                  <option value="file">File</option>
+                  <!-- <option value="file">File</option> -->
                 </select>
+              </div>
+              <div class="mb-2" id="divPrintModeUSB" style="display:none;">
+                <button type="button" id="btnShowUSB" class="btn btn-sm btn-info rounded-pill shadow-sm">
+                  <i class="fa-brands fa-usb"></i> Show USB Connected
+                </button>
+                <button type="button" id="btnInfoUSB" class="btn btn-sm btn-danger rounded-pill shadow-sm">
+                  <i class="fa fa-info"></i>
+                </button>
+              </div>
+              <div class="mb-2" id="divPrinterName">
+                <label for="printerName" class="form-label fw-semibold" id="cptPrinterName">Printer IP</label>
+                <input type="text" class="form-control" id="printerName" placeholder="e.g. 192.168.1.110" value="192.168.1.110" />
+              </div>
+              <div class="mb-2" id="divPrinterPort">
+                <label for="printerPort" class="form-label fw-semibold" id="cptPrinterPort">Printer Port</label>
+                <input type="text" class="form-control" id="printerPort" placeholder="9100" value="9100" />
               </div>
               <div class="mb-2">
                 <label for="printText" class="form-label fw-semibold">Text To Print</label>
@@ -89,6 +97,57 @@
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USB Connected Modal -->
+    <div class="modal fade" id="USBConnectedModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">USB Devices</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-bordered table-striped table-sm">
+              <thead class="table-light">
+                <tr>
+                  <th>VID</th>
+                  <th>PID</th>
+                  <th>Manufacturer</th>
+                  <th>Product</th>
+                  <th style="text-align: center;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="usbTableBody"></tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USB Info Modal -->
+    <div class="modal fade" id="USBInfoModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">USB Configuration</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div id="content-usb-info-modal"></div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">
+              Close
+            </button>
           </div>
         </div>
       </div>

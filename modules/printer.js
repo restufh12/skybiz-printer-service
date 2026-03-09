@@ -53,9 +53,8 @@ function getDevice(printMode, printerName, printerPort) {
       // --- USB printer ---
       case "usb": {
         try { escpos.USB = require("escpos-usb"); } catch {}
-        const devices = escpos.USB.findPrinter();
-        if (!devices || devices.length === 0) throw new Error("No USB printer detected");
-        return new escpos.USB();
+        const arrPrinterName = printerName.split(":").map((item)=>item.trim());
+        return new escpos.USB(arrPrinterName[0], arrPrinterName[1]);
       }
 
       // --- Serial printer ---

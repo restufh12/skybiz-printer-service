@@ -13,6 +13,13 @@ window.addEventListener("DOMContentLoaded", () => {
   const btnDeleteFailed = document.getElementById("btnDeleteFailed");
   const btnClear = document.getElementById('btnClearLog');
   const log = document.getElementById('log');
+  const btnShowUSB = document.getElementById('btnShowUSB');
+  const btnInfoUSB = document.getElementById('btnInfoUSB');
+  const divPrintModeUSB = document.getElementById('divPrintModeUSB');
+  const divPrinterName = document.getElementById('divPrinterName');
+  const divPrinterPort = document.getElementById('divPrinterPort');
+  const cptPrinterName = document.getElementById('cptPrinterName');
+  const cptPrinterPort = document.getElementById('cptPrinterPort');
 
   function addLog(message) {
     const div = document.createElement('div');
@@ -212,6 +219,65 @@ window.addEventListener("DOMContentLoaded", () => {
     log.innerHTML = '';
   };
 
+  printMode.onchange = () => {
+    if (printMode.value === 'usb') {
+      divPrintModeUSB.style.display = 'inline-block';
+      divPrinterPort.style.display = 'none';
+      cptPrinterName.innerHTML = 'Printer USB (VID:PID)';
+      printerName.value = '0x4b43:0x3830';
+      printerName.placeholder='VID:PID';
+    } else {
+      divPrintModeUSB.style.display = 'none';
+      divPrinterPort.style.display = 'inline-block';
+      cptPrinterName.innerHTML = 'Printer IP';
+      printerName.value = '192.168.1.110';
+      printerName.placeholder='e.g. 192.168.1.110';
+    }
+  };
+
+  btnInfoUSB.onclick = async () => {
+    const divContent = document.getElementById("content-usb-info-modal");
+    const res  = await fetch("./views/usb-configuration.html");
+    const html = await res.text();
+
+    divContent.innerHTML = html;
+
+    const USBInfoModal = new bootstrap.Modal(document.getElementById("USBInfoModal"));
+    USBInfoModal.show();
+  };
+
+  btnShowUSB.onclick = async () => {
+    const devices   = await ipcRenderer.invoke("get-usb-devices");
+    const tbody     = document.getElementById("usbTableBody");
+    tbody.innerHTML = "";
+
+    devices.forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.vid}</td>
+        <td>${d.pid}</td>
+        <td>${d.manufacturer}</td>
+        <td>${d.product}</td>
+        <td align="center"><button class="btn btn-sm btn-outline-success btn-use-usb" data-vid="${d.vid}" data-pid="${d.pid}">Use</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const USBConnectedModal = new bootstrap.Modal(document.getElementById("USBConnectedModal"));
+    USBConnectedModal.show();
+  };
+
+  document.getElementById("usbTableBody").addEventListener("click", function(e) {
+    const btn = e.target.closest(".btn-use-usb");
+    if (!btn) return;
+    const vid = btn.dataset.vid;
+    const pid = btn.dataset.pid;
+    document.getElementById("printerName").value = `${vid}:${pid}`;
+    const modalEl = document.getElementById("USBConnectedModal");
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+  });
+
   // CONFIGURATION GRID.JS
   let grid;
   async function loadQueue() {
@@ -322,7 +388,6 @@ window.addEventListener("DOMContentLoaded", () => {
     const modal = new bootstrap.Modal(document.getElementById("textModal"));
     modal.show();
   });
-
 
   // Delete All Failed
   document.getElementById("btnDeleteFailed").onclick = async () => {

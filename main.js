@@ -6,6 +6,7 @@ const path = require('path');
 const AutoLaunch = require('electron-auto-launch');
 const WebSocket = require('ws');
 const escpos = require('escpos');
+const usb = require("usb");
 const { autoUpdater } = require('electron-updater');
 
 // Try enable escpos-network (for LAN printer)
@@ -195,6 +196,41 @@ app.whenReady().then(() => {
     }
   });
 
+  ipcMain.handle("get-usb-devices", async () => {
+    const devices = usb.getDeviceList();
+    const results = [];
+    for (const device of devices) {
+      const desc       = device.deviceDescriptor;
+      let manufacturer = "";
+      let product      = "";
+
+      try {
+        device.open();
+        manufacturer = await new Promise((resolve) => {
+          if (!desc.iManufacturer) return resolve("");
+          device.getStringDescriptor(desc.iManufacturer, (err, data) => {
+            resolve(err ? "" : data);
+          });
+        });
+        product = await new Promise((resolve) => {
+          if (!desc.iProduct) return resolve("");
+          device.getStringDescriptor(desc.iProduct, (err, data) => {
+            resolve(err ? "" : data);
+          });
+        });
+        device.close();
+      } catch (err) {}
+
+      results.push({
+        vid: "0x" + desc.idVendor.toString(16).padStart(4, "0"),
+        pid: "0x" + desc.idProduct.toString(16).padStart(4, "0"),
+        manufacturer: manufacturer || "Unknown",
+        product: product || "Unknown"
+      });
+    }
+    return results;
+  });
+
   ipcMain.on('save-config', (event, newConfig) => {
     try {
       configManager.save(newConfig);
@@ -226,7 +262,16 @@ app.whenReady().then(() => {
   ipcMain.handle('delete-failed-jobs', () => {
     try {
       const result = db.prepare(`DELETE FROM print_queue WHERE status='error'`).run();
-      sendLog(getMainWindow(), `<span class="text-info">Deleted ${result.changes} failed jobs.</span>`);
+
+      // reset ID if table is empty
+      let resetMessage = "";
+      const rowCount = db.prepare(`SELECT COUNT(*) as count FROM print_queue`).get();
+      if (rowCount.count === 0) {
+        db.prepare(`DELETE FROM sqlite_sequence WHERE name='print_queue'`).run();
+        resetMessage = " (Table truncated/reset)";
+      }
+
+      sendLog(getMainWindow(), `<span class="text-info">Deleted ${result.changes} failed jobs. ${resetMessage}</span>`);
       return { success: true, count: result.changes };
     } catch (err) {
       return { success: false, error: err.message };

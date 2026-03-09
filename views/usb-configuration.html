@@ -1,0 +1,190 @@
+<style>
+  .zadig-modal {
+    font-family: 'DM Sans', sans-serif;
+    color: #1a1d27;
+    padding: 8px 4px;
+  }
+  .zadig-modal .error-banner {
+    background: #fff4f2;
+    border: 1px solid #e85d3f;
+    border-left: 4px solid #e85d3f;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .zadig-modal .error-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: #c0392b;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    padding: 6px;
+    background-color: #ff9bc045;
+    border-radius: 4px;
+  }
+  .zadig-modal .error-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #c0392b;
+    font-weight: 700;
+  }
+  .zadig-modal .error-desc {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    line-height: 1.5;
+  }
+  .zadig-modal h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #1a1d27;
+  }
+  .zadig-modal .subtitle {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 20px;
+  }
+  .zadig-modal .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .zadig-modal .step {
+    background: #f8f9fb;
+    border: 1px solid #e4e6ef;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .zadig-modal .step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid #dde0ee;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #e85d3f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .zadig-modal .step-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 3px;
+    color: #1a1d27;
+  }
+  .zadig-modal .step-body {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.6;
+  }
+  .zadig-modal .step-body a { 
+    color: #2563eb; 
+    text-decoration: none; 
+  }
+  .zadig-modal code {
+    font-family: 'JetBrains Mono', monospace;
+    background: #eef0f7;
+    border: 1px solid #dde0ee;
+    color: #2d6a4f;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+  .zadig-modal .warn {
+    background: #fffbea;
+    border-left: 3px solid #f0b429;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #92650a;
+    line-height: 1.5;
+  }
+  .zadig-modal .success-box {
+    background: #f0faf4;
+    border: 1px solid #3fcf6a;
+    border-left: 4px solid #3fcf6a;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: #1a6b3a;
+  }
+  .zadig-modal .success-box strong {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #27a551;
+    display: block;
+    margin-bottom: 3px;
+  }
+</style>
+
+<div class="zadig-modal">
+
+  <div class="error-banner">
+    <div class="error-label">IF ERROR DETECTED :</div>
+    <div class="error-code">LIBUSB_ERROR_NOT_SUPPORTED</div>
+    <div class="error-desc">Windows is using the wrong USB driver. Fix it by installing WinUSB via Zadig.</div>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Download Zadig</div>
+        <div class="step-body">Go to <a href="#" onclick="require('electron').shell.openExternal('https://zadig.akeo.ie'); return false;">zadig.akeo.ie</a> and download the latest <code>.exe</code>. No installation needed.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">Run as Administrator</div>
+        <div class="step-body">Right-click <code>zadig.exe</code> → <strong style="color:#1a1d27">Run as administrator</strong>. Ensure printer is plugged in.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Show All Devices</div>
+        <div class="step-body">Click <strong style="color:#1a1d27">Options</strong> → check <strong style="color:#1a1d27">List All Devices</strong>, then select your printer.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Select WinUSB Driver</div>
+        <div class="step-body">Use the arrows on the right to choose <code>WinUSB</code> as the target driver.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">Install Driver</div>
+        <div class="step-body">Click <strong style="color:#1a1d27">Install Driver/Replace Driver</strong> and wait ~30 seconds.</div>
+        <div class="warn">⚠️ Do not unplug the USB cable during installation.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="success-box">
+    <strong>✓ DONE</strong>
+    Restart <b>SkyBiz Printer Service</b> app. The <code>LIBUSB_ERROR_NOT_SUPPORTED</code> error should be resolved.
+  </div>
+
+</div>
