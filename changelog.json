@@ -28,7 +28,8 @@
     "changes": [
       "Added modul EDC",
       "Update new version with confirm",
-      "Remove auto startup"
+      "Remove auto startup",
+      "Change application name"
     ]
   }
 ]
