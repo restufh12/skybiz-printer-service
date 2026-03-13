@@ -7,6 +7,7 @@ const AutoLaunch = require('electron-auto-launch');
 const WebSocket = require('ws');
 const escpos = require('escpos');
 const usb = require("usb");
+const { SerialPort } = require('serialport');
 const { autoUpdater } = require('electron-updater');
 
 // Try enable escpos-network (for LAN printer)
@@ -24,6 +25,7 @@ const { connectWebSocket } = require('./modules/websocket');
 const { printToPrinter } = require('./modules/printer');
 const { getMacAddress } = require('./utils/systemInfo');
 const { startQueueWorker } = require('./modules/queueWorker');
+const { handleEDC } = require('./modules/edc-handler');
 
 // === Globals ===
 let mainWindow = null;
@@ -104,7 +106,7 @@ function createTray() {
 // =======================================================
 // AUTO LAUNCH
 // =======================================================
-function setupAutoLaunch() {
+/*function setupAutoLaunch() {
   const autoLauncher = new AutoLaunch({
     name: 'SkyBizPrinterService',
     path: process.execPath,
@@ -113,12 +115,14 @@ function setupAutoLaunch() {
   autoLauncher.isEnabled()
     .then((isEnabled) => !isEnabled && autoLauncher.enable())
     .catch((err) => sendLog(mainWindow, `<span class="text-danger">Auto-launch error: ${err}</span>`));
-}
+}*/
 
 // =======================================================
 // AUTO UPDATE
 // =======================================================
 function setupAutoUpdater() {
+  autoUpdater.autoDownload = false; // need confirm to update
+
   // Set update source URL — this must match your "publish.url" in package.json
   autoUpdater.setFeedURL({
     provider: 'generic',
@@ -146,13 +150,33 @@ function setupAutoUpdater() {
   });
 
   // Event: update downloaded and ready to install
-  autoUpdater.on('update-downloaded', () => {
+  /*autoUpdater.on('update-downloaded', () => {
     dialog.showMessageBox({
       type: 'info',
       title: 'Update Ready',
       message: 'A new version of SkyBiz Printer Service has been downloaded.\nThe application will restart to install the update.',
     }).then(() => {
       autoUpdater.quitAndInstall();
+    });
+  });*/
+
+  // Event: update downloaded and ready to install (with user confirmation)
+  autoUpdater.on('update-available', (info) => {
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Update Available',
+      message: `New version ${info.version} is available.`,
+      detail: 'Do you want to download and install the update?',
+      buttons: ['Download Now', 'Skip'],
+      defaultId: 0,
+      cancelId: 1,
+    }).then((result) => {
+      if (result.response === 0) {
+        sendLog(mainWindow, `Downloading update v${info.version}...`);
+        autoUpdater.downloadUpdate();
+      } else {
+        sendLog(mainWindow, `Update v${info.version} skipped by user.`);
+      }
     });
   });
 }
@@ -163,7 +187,7 @@ function setupAutoUpdater() {
 app.whenReady().then(() => {
   createWindow();
   createTray();
-  setupAutoLaunch();
+  // setupAutoLaunch();
   setupAutoUpdater();
 
   // Load Config
@@ -181,6 +205,15 @@ app.whenReady().then(() => {
   ipcMain.handle('print-test', async (event, data) => {
     try {
       const result = await printToPrinter(data);
+      return { success: true, message: result };
+    } catch (err) {
+      return { success: false, error: err.message || String(err) };
+    }
+  });
+
+  ipcMain.handle('edc-test', async (event, data) => {
+    try {
+      const result = await handleEDC(data);
       return { success: true, message: result };
     } catch (err) {
       return { success: false, error: err.message || String(err) };
@@ -229,6 +262,24 @@ app.whenReady().then(() => {
       });
     }
     return results;
+  });
+
+  ipcMain.handle('get-usb-devices-edc', async () => {
+    try {
+      const ports = await SerialPort.list();
+
+      if (ports.length === 0) return [];
+
+      return ports.map(p => ({
+        comPort:      p.path,
+        manufacturer: p.manufacturer || '-',
+        vendorId:     p.vendorId     || '-',
+        productId:    p.productId    || '-',
+        pnpId:        p.pnpId        || '-',
+      }));
+    } catch (err) {
+      return [];
+    }
   });
 
   ipcMain.on('save-config', (event, newConfig) => {

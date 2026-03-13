@@ -6,6 +6,7 @@ const WebSocket = require('ws');
 const { getMainWindow } = require('./globals');
 const { sendLog } = require('./logger');
 const { addToQueue } = require('./queue');
+const { handleEDC } = require('./edc-handler');
 
 let ws = null;
 let reconnectTimeout = null;
@@ -34,9 +35,11 @@ function connectWebSocket(vars) {
     catch (err) { sendLog(mainWindow, `<span class="text-danger">Register send failed: ${err.message}</span>`); }
   });
 
-  ws.on('message', (msg) => {
+  ws.on('message', async (msg) => {
     try {
       const data = JSON.parse(msg);
+
+      // PRINT
       if (data.type === 'print') {
         if (data.payload){
           addToQueue({
@@ -47,6 +50,11 @@ function connectWebSocket(vars) {
             print_text: data.payload.printText || ''
           });
         }
+      }
+
+      // EDC
+      if (data.type === 'edc') {
+        await handleEDC({ ...data.payload, DEVICE_ID, ws });
       }
     } catch (err) {
       sendLog(mainWindow, `<span class="text-danger">WS message error: ${err.message}</span>`);

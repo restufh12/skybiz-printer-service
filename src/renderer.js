@@ -1,8 +1,11 @@
 const { ipcRenderer } = require('electron');
+const Inputmask = require("inputmask").default;
 
 window.addEventListener("DOMContentLoaded", () => {
   const deviceId = document.getElementById('deviceId');
   const wsServer = document.getElementById('wsServer');
+
+  // PRINTER
   const printerName = document.getElementById('printerName');
   const printerPort = document.getElementById('printerPort');
   const printMode = document.getElementById('printMode');
@@ -20,6 +23,23 @@ window.addEventListener("DOMContentLoaded", () => {
   const divPrinterPort = document.getElementById('divPrinterPort');
   const cptPrinterName = document.getElementById('cptPrinterName');
   const cptPrinterPort = document.getElementById('cptPrinterPort');
+
+  // EDC
+  const modeEDC = document.getElementById('modeEDC');
+  const typeEDC = document.getElementById('typeEDC');
+  const ipEDC = document.getElementById('ipEDC');
+  const portEDC = document.getElementById('portEDC');
+  const actionEDC = document.getElementById('actionEDC');
+  const amountEDC = document.getElementById('amountEDC');
+  const cashierEDC = document.getElementById('cashierEDC');
+  const transactionIdEDC = document.getElementById('transactionIdEDC');
+  const btnTestEDC = document.getElementById('btnTestEDC');
+  const btnShowEDCUSB = document.getElementById('btnShowEDCUSB');
+  const divEDCModeUSB = document.getElementById('divEDCModeUSB');
+  const divIpEDC = document.getElementById('divIpEDC');
+  const divPortEDC = document.getElementById('divPortEDC');
+  const cptIpEDC = document.getElementById('cptIpEDC');
+  const cptPortEDC = document.getElementById('cptPortEDC');
 
   function addLog(message) {
     const div = document.createElement('div');
@@ -154,18 +174,27 @@ window.addEventListener("DOMContentLoaded", () => {
 
   btnTestPrint.onclick = async () => {
     // VALIDATION EMPTY
-    if(printerName.value==""){
-      printerName.focus();
-      return;
-    }
-    if(printerPort.value==""){
-      printerPort.focus();
-      return;
-    }
     if(printMode.value==""){
       printMode.focus();
       return;
     }
+
+    if(printMode.value=="usb"){
+      if(printerName.value==""){
+        printerName.focus();
+        return;
+      }
+    } else {
+      if(printerName.value==""){
+        printerName.focus();
+        return;
+      }
+      if(printerPort.value==""){
+        printerPort.focus();
+        return;
+      }
+    }
+
     if(printText.value==""){
       printText.focus();
       return;
@@ -194,24 +223,16 @@ window.addEventListener("DOMContentLoaded", () => {
       });
 
       if (result.success) {
-        // Hide Loading
-        btnTestPrint.disabled = false;
-        btnTestPrint.innerHTML = originalText;
-        
         Swal.fire('Success', result.message || 'Print command sent', 'success');
       } else {
-        // Hide Loading
-        btnTestPrint.disabled = false;
-        btnTestPrint.innerHTML = originalText;
-
         Swal.fire('Error', result.error || 'Unknown error', 'error');
       }
     } catch (e) {
-      // Hide Loading
+      Swal.fire('Error', e.message || e, 'error');
+    } finally {
+      // ALWAYS restore button
       btnTestPrint.disabled = false;
       btnTestPrint.innerHTML = originalText;
-
-      Swal.fire('Error', e.message || e, 'error');
     }
   };
 
@@ -228,7 +249,7 @@ window.addEventListener("DOMContentLoaded", () => {
       printerName.placeholder='VID:PID';
     } else {
       divPrintModeUSB.style.display = 'none';
-      divPrinterPort.style.display = 'inline-block';
+      divPrinterPort.style.display = 'block';
       cptPrinterName.innerHTML = 'Printer IP';
       printerName.value = '192.168.1.110';
       printerName.placeholder='e.g. 192.168.1.110';
@@ -277,6 +298,130 @@ window.addEventListener("DOMContentLoaded", () => {
     const modal = bootstrap.Modal.getInstance(modalEl);
     modal.hide();
   });
+
+
+  // EDC
+  modeEDC.onchange = () => {
+    if (modeEDC.value === 'usb') {
+      divEDCModeUSB.style.display = 'inline-block';
+      divIpEDC.style.display = 'none';
+      cptPortEDC.innerHTML = 'EDC USB/Port';
+      portEDC.value = '';
+      portEDC.placeholder='';
+      portEDC.readOnly = true;
+      portEDC.style.background = "#F5F2F2";
+    } else {
+      divEDCModeUSB.style.display = 'none';
+      divIpEDC.style.display = 'block';
+      cptPortEDC.innerHTML = 'EDC Port';
+      portEDC.value = '9100';
+      portEDC.placeholder='e.g. 9100';
+      portEDC.readOnly = false;
+      portEDC.style.background = "#FFFFFF";
+    }
+  };
+
+  btnShowEDCUSB.onclick = async () => {
+    const devices   = await ipcRenderer.invoke("get-usb-devices-edc");
+    const tbody     = document.getElementById("usbEDCTableBody");
+    tbody.innerHTML = "";
+
+    devices.forEach(d => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.comPort}</td>
+        <td>${d.manufacturer}</td>
+        <td>${d.vendorId}</td>
+        <td>${d.productId}</td>
+        <td align="center"><button class="btn btn-sm btn-outline-success btn-use-usb-edc" data-comport="${d.comPort}">Use</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const USBConnectedEDCModal = new bootstrap.Modal(document.getElementById("USBConnectedEDCModal"));
+    USBConnectedEDCModal.show();
+  };
+
+  document.getElementById("usbEDCTableBody").addEventListener("click", function(e) {
+    const btn = e.target.closest(".btn-use-usb-edc");
+    if (!btn) return;
+    const comPort = btn.dataset.comport;
+    document.getElementById("portEDC").value = `${comPort}`;
+    const modalEl = document.getElementById("USBConnectedEDCModal");
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+  });
+
+  btnTestEDC.onclick = async () => {
+    // VALIDATION EMPTY
+    if(modeEDC.value==""){
+      modeEDC.focus();
+      return;
+    }
+
+    if(modeEDC.value=="usb"){
+      if(portEDC.value==""){
+        portEDC.focus();
+        return;
+      }
+    } else {
+      if(ipEDC.value==""){
+        ipEDC.focus();
+        return;
+      }
+      if(portEDC.value==""){
+        portEDC.focus();
+        return;
+      }
+    }
+
+    const vAmountEDC = parseFloat(amountEDC.value.replace(/,/g, ''));
+    if (isNaN(vAmountEDC) || vAmountEDC <= 0) {
+      amountEDC.focus();
+      return;
+    }
+
+    // Show Loading
+    const originalText = btnTestEDC.innerHTML;
+    btnTestEDC.disabled = true;
+    btnTestEDC.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Connecting...`;
+
+    try {
+      const result = await ipcRenderer.invoke('edc-test', {
+        modeEDC       : modeEDC.value, 
+        typeEDC       : typeEDC.value, 
+        ipEDC         : ipEDC.value, 
+        portEDC       : portEDC.value, 
+        action        : actionEDC.value, 
+        amount        : vAmountEDC,
+        cashier       : cashierEDC.value,
+        transactionId : transactionIdEDC.value
+      });
+
+      if (result.success) {
+        Swal.fire('Success', result.message || 'Print command sent', 'success');
+      } else {
+        Swal.fire('Error', result.error || 'Unknown error', 'error');
+      }
+    } catch (e) {
+      Swal.fire('Error', e.message || e, 'error');
+    } finally {
+      // ALWAYS restore button
+      btnTestEDC.disabled = false;
+      btnTestEDC.innerHTML = originalText;
+    }
+  };
+
+  // AMOUNT MUST 2 DECIMAL
+  Inputmask({
+    'alias': 'decimal',
+    'groupSeparator': ',', // Optional: adds thousand separators
+    'autoGroup': true,     // Optional: automatically groups digits
+    'digits': 2,           // Specifies exactly 2 decimal places
+    'digitsOptional': false, // Ensures the 2 decimal places are always shown
+    'placeholder': '0.00', // Shows placeholder in the correct format
+    'rightAlign': true     // Aligns the input to the right
+  }).mask(amountEDC);
 
   // CONFIGURATION GRID.JS
   let grid;
